@@ -333,6 +333,20 @@ export const useDrupalCe = () => {
       useFetchOptions.baseURL = getDrupalBaseUrl() + getCeApiEndpoint(false)
     }
 
+    if (import.meta.client && !nuxtApp.isHydrating) {
+      const menu = ref<unknown>(undefined)
+      const { key: _key, getCachedData: _getCachedData, ...clientFetchOptions } = useFetchOptions
+
+      try {
+        menu.value = await $ceApi(clientFetchOptions, skipDrupalCeApiProxy)(menuPath.value)
+      } catch (error: unknown) {
+        const wrappedError = { value: error }
+        overrideErrorHandler ? overrideErrorHandler(wrappedError) : menuErrorHandler(wrappedError)
+      }
+
+      return menu
+    }
+
     const { data: menu, error } = await useFetch(menuPath, useFetchOptions)
 
     if (error.value) {
