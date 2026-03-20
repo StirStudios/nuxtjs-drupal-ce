@@ -327,19 +327,35 @@ export const useDrupalCe = () => {
 
     // Override baseURL specifically for menu endpoints
     if (config.serverApiProxy && !skipDrupalCeApiProxy) {
-      useFetchOptions.baseURL = '/api/menu'
+      useFetchOptions.baseURL = '/api/menu/'
     }
     else {
-      useFetchOptions.baseURL = getDrupalBaseUrl() + getCeApiEndpoint(false)
+      useFetchOptions.baseURL = `${getDrupalBaseUrl() + getCeApiEndpoint(false)}/`
     }
 
     if (import.meta.client && !nuxtApp.isHydrating) {
       const menu = ref<unknown>(undefined)
-      const { key: _key, getCachedData: _getCachedData, ...clientFetchOptions } = useFetchOptions
+      const {
+        key: _key,
+        getCachedData: _getCachedData,
+        default: _default,
+        transform: _transform,
+        pick: _pick,
+        deep: _deep,
+        dedupe: _dedupe,
+        lazy: _lazy,
+        immediate: _immediate,
+        watch: _watch,
+        ...clientFetchOptions
+      } = useFetchOptions
 
       try {
-        menu.value = await $ceApi(clientFetchOptions, skipDrupalCeApiProxy)(menuPath.value)
-      } catch (error: unknown) {
+        menu.value = await $fetch(menuPath.value, {
+          ...clientFetchOptions,
+          baseURL: useFetchOptions.baseURL,
+        })
+      }
+      catch (error: unknown) {
         const wrappedError = { value: error }
         overrideErrorHandler ? overrideErrorHandler(wrappedError) : menuErrorHandler(wrappedError)
       }
